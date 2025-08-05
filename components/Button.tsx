@@ -1,20 +1,10 @@
 // components/Button.tsx
-type ButtonProps = {
-  label: string;
-  onClick: () => void;
-  type?: "button" | "submit";
-};
 
-const Button = ({ label, onClick, type = "button" }: ButtonProps) => {
+type ButtonProps = { label: string; onClick?: () => void; type?: "button" | "submit" | "reset" };
+export default function Button({ label, onClick, type = "button" }: ButtonProps) {
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded shadow disabled:opacity-50"
-    >
+    <button type={type} onClick={onClick} className="px-4 py-2 rounded bg-blue-600 text-white">
       {label}
     </button>
   );
-};
-
-export default Button;
+}

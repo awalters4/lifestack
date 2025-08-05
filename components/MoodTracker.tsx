@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+type Props = {
+  selectedDate: string;
+};
 
 const defaultMoods = [
   { label: "Sad", emoji: "😔" },
@@ -9,11 +13,28 @@ const defaultMoods = [
   { label: "Angry", emoji: "😠" },
 ];
 
-const MoodTracker = () => {
+const STORAGE_KEY = "lifestack_data";
+
+const MoodTracker = ({ selectedDate }: Props) => {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [customMood, setCustomMood] = useState("");
   const [customEmoji, setCustomEmoji] = useState("");
   const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      const entry = data[selectedDate];
+      setSelectedMood(entry?.mood || null);
+      setNotes(entry?.notes || "");
+      setCustomMood("");
+      setCustomEmoji("");
+    } catch (err) {
+      console.error("Failed to load mood/notes", err);
+    }
+  }, [selectedDate]);
 
   const handleMoodSelect = (emoji: string) => {
     setSelectedMood(emoji);
@@ -30,14 +51,25 @@ const MoodTracker = () => {
   };
 
   const handleSaveMood = () => {
-    console.log("Saved Mood:", selectedMood);
-    console.log("Notes:", notes);
-    // future: save to Supabase
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const data = raw ? JSON.parse(raw) : {};
+      const existing = data[selectedDate] || {};
+      data[selectedDate] = {
+        ...existing,
+        mood: selectedMood,
+        notes,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      alert("Mood saved ✅");
+    } catch (err) {
+      console.error("Failed to save mood", err);
+    }
   };
 
   return (
     <div className="bg-white p-4 rounded shadow w-full max-w-md mx-auto mt-6">
-      <h2 className="text-lg font-semibold mb-4 text-center">Today's Mood</h2>
+      <h2 className="text-lg font-semibold mb-4 text-center">Mood for {selectedDate}</h2>
       <div className="flex flex-wrap justify-center gap-4">
         {defaultMoods.map((mood) => (
           <button
